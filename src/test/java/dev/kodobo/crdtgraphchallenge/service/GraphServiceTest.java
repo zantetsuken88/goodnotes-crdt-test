@@ -60,12 +60,14 @@ class GraphServiceTest {
         State state = graphService.getState();
         Node shouldBeNull = state.getAddedNode("Test Add Node");
         assertThat(shouldBeNull).isNull();
+        assertThat(graphService.getGraph().hasNode("Test Add Node")).isFalse();
 
         graphService.addNode("Test Add Node", LocalDateTime.now(clock));
 
         Node result = state.getAddedNode("Test Add Node");
         assertThat(result).isNotNull();
         assertThat(result.getLabel()).isEqualTo("Test Add Node");
+        assertThat(graphService.getGraph().hasNode("Test Add Node")).isTrue();
     }
 
     @Test
@@ -80,6 +82,8 @@ class GraphServiceTest {
 
         Edge shouldBeNull = state.getAddedEdge(sourceLabel, destinationLabel);
         assertThat(shouldBeNull).isNull();
+        assertThat(graphService.getGraph().hasEdge(sourceLabel, destinationLabel)).isFalse();
+        assertThat(graphService.getGraph().hasEdge(destinationLabel, sourceLabel)).isFalse();
 
         graphService.addEdgePair(sourceLabel, destinationLabel, now);
 
@@ -92,6 +96,8 @@ class GraphServiceTest {
         assertThat(reverseRes).isNotNull();
         assertThat(reverseRes.getSourceNodeLabel()).isEqualTo(destinationLabel);
         assertThat(reverseRes.getDestinationNodeLabel()).isEqualTo(sourceLabel);
+        assertThat(graphService.getGraph().hasEdge(sourceLabel, destinationLabel)).isTrue();
+        assertThat(graphService.getGraph().hasEdge(destinationLabel, sourceLabel)).isTrue();
     }
 
     @Test

@@ -48,14 +48,14 @@ public class GraphService {
         return getGraph().getConnectedNodes(label);
     }
 
+    // if previously added, the put operation should replace the Node with a new timestamp to indicate
+    // there was a more recent "add" operation. We need to be aware of this in case of concurrent remove operations.
     public void addNode(String label, LocalDateTime timestamp) {
-        addNode(idGenerator.generateId(label), label, timestamp);
-    }
-
-    public void addNode(UUID nodeUid, String label, LocalDateTime timestamp) {
-        // if previously added, the put operation should replace the Node with a new timestamp to indicate
-        // there was a more recent "add" operation.
-        // We need to be aware of this in case of concurrent remove operations.
+        // The UUID will be fixed based on the provided label - so in this instance there's no need for a separate
+        // method to re-add a removed node. However, the UUID field could be useful if the contents of each node
+        // were changed to require non-unique contents - in which case we could overload the method and provide a
+        // UUID.
+        UUID nodeUid = idGenerator.generateId(label);
         localState.getNodesAdded().put(nodeUid, new Node(nodeUid, label, timestamp));
     }
 
@@ -187,17 +187,4 @@ public class GraphService {
             }
         });
     }
-
-//    @Override
-//    public String toString() {
-//        StringBuilder builder = new StringBuilder();
-//        Map<Node, List<Node>> graph = getGraph();
-//
-//        graph.forEach((k, v) -> {
-//            builder.append(k.getLabel()).append(": [ ");
-//            v.forEach(conn -> builder.append(conn.getLabel()).append(" "));
-//            builder.append("] \n");
-//        });
-//        return builder.toString();
-//    }
 }
