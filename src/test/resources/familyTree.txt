@@ -1,0 +1,9 @@
+Paul: June, Mark, Lee, Fliss, Tom
+June: Paul, Mark, Lee
+Mark: Paul, June, Lee, Tom, Marianne
+Lee: Paul, June, Mark, Tom, Jules
+Fliss: Paul, Tom
+Tom: Paul, Fliss, Mark, Lee, Lizzie
+Jules: Lee
+Lizzie: Tom
+Marianne: Mark

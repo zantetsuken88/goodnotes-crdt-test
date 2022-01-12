@@ -1,0 +1,1 @@
+### commutative, associative, and idempotent.
