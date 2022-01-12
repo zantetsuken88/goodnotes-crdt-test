@@ -2,18 +2,18 @@ package dev.kodobo.crdtgraphchallenge.model;
 import java.util.*;
 
 public class ReadOnlyGraph {
-    private final Map<Node, List<Node>> nodes;
+    private final Map<Node, List<Node>> graph;
 
-    public ReadOnlyGraph(Map<Node, List<Node>> nodes) {
-        this.nodes = nodes;
+    public ReadOnlyGraph(Map<Node, List<Node>> graph) {
+        this.graph = graph;
     }
 
-    public Map<Node, List<Node>> getNodes() {
-        return nodes;
+    public Map<Node, List<Node>> getGraph() {
+        return graph;
     }
 
     public Node getNode(String label) {
-        return nodes.keySet()
+        return graph.keySet()
                 .stream()
                 .filter(n -> n.getLabel().equals(label))
                 .findFirst()
@@ -21,7 +21,7 @@ public class ReadOnlyGraph {
     }
 
     public boolean hasNode(String label) {
-        return nodes.keySet().stream().anyMatch(n -> n.getLabel().equals(label));
+        return graph.keySet().stream().anyMatch(n -> n.getLabel().equals(label));
     }
 
     public boolean hasEdge(String source, String destination) {
@@ -33,7 +33,7 @@ public class ReadOnlyGraph {
     }
 
     public List<Node> getConnectedNodes(String label) {
-        return nodes.get(getNode(label));
+        return graph.get(getNode(label));
     }
 
     public List<String> findShortestRoute(String root, String dest) {
@@ -108,10 +108,10 @@ public class ReadOnlyGraph {
     public String toString() {
         StringBuilder builder = new StringBuilder();
 
-        nodes.keySet()
+        graph.keySet()
                 .forEach(node -> {
                     builder.append(node.getLabel()).append(": [ ");
-                    nodes.get(node).forEach(conn -> builder.append(conn.getLabel()).append(" "));
+                    graph.get(node).forEach(conn -> builder.append(conn.getLabel()).append(" "));
                     builder.append("] \n");
                 });
         return builder.toString();

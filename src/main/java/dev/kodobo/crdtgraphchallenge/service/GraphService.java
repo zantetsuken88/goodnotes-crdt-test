@@ -83,19 +83,19 @@ public class GraphService {
         removeEdge(destinationNodeLabel, sourceNodeLabel, timestamp);
     }
 
-    public void mergeWithRemote(State remote) {
-        mergeNodes(localState.getNodesAdded(), remote.getNodesAdded());
-        mergeNodes(localState.getNodesRemoved(), remote.getNodesRemoved());
-        mergeEdges(localState.getEdgesAdded(), remote.getEdgesAdded());
-        mergeEdges(localState.getEdgesRemoved(), remote.getEdgesRemoved());
-    }
-
     private void removeEdge(String sourceNodeLabel, String destinationNodeLabel, LocalDateTime timestamp) {
         Edge existing = localState.getRemovedEdge(sourceNodeLabel, destinationNodeLabel);
         if (existing != null) {
             localState.getEdgesRemoved().remove(existing);
         }
         localState.getEdgesRemoved().add(new Edge(sourceNodeLabel, destinationNodeLabel, timestamp));
+    }
+
+    public void mergeWithRemote(State remote) {
+        mergeNodes(localState.getNodesAdded(), remote.getNodesAdded());
+        mergeNodes(localState.getNodesRemoved(), remote.getNodesRemoved());
+        mergeEdges(localState.getEdgesAdded(), remote.getEdgesAdded());
+        mergeEdges(localState.getEdgesRemoved(), remote.getEdgesRemoved());
     }
 
     private List<Node> unionNodes() {

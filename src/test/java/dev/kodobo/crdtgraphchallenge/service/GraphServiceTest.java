@@ -35,7 +35,7 @@ class GraphServiceTest {
     public void canBuildGraphFromFile() {
         populateGraphFromFile("testData.txt");
 
-        assertThat(graphService.getGraph().getNodes()).hasSize(4);
+        assertThat(graphService.getGraph().getGraph()).hasSize(4);
         assertThat(localState.getNodesAdded().values())
                 .extracting(Node::getLabel)
                 .containsExactlyInAnyOrder("node1", "node2", "node3", "node4");

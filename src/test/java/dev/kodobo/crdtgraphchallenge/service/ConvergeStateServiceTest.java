@@ -50,7 +50,7 @@ class ConvergeStateServiceTest {
         replica.addEdgePair("one", "four", LocalDateTime.now(replicaClock));
 
         ReadOnlyGraph initial = convergeStateService.getResult();
-        assertThat(initial.getNodes().keySet())
+        assertThat(initial.getGraph().keySet())
                 .extracting(Node::getLabel)
                 .containsExactlyInAnyOrder("one", "two", "three");
         assertThat(initial.hasEdge("one", "four")).isFalse();
@@ -59,7 +59,7 @@ class ConvergeStateServiceTest {
 
         ReadOnlyGraph result = convergeStateService.getResult();
 
-        assertThat(result.getNodes().keySet())
+        assertThat(result.getGraph().keySet())
                 .extracting(Node::getLabel)
                 .containsExactlyInAnyOrder("one", "two", "three", "four");
         assertThat(result.hasEdge("one", "four")).isTrue();
@@ -73,7 +73,7 @@ class ConvergeStateServiceTest {
         expectedEdges.put("three", new String[] {"one", "two"});
 
         ReadOnlyGraph result = convergeStateService.getResult();
-        Map<Node, List<Node>> nodes = result.getNodes();
+        Map<Node, List<Node>> nodes = result.getGraph();
         assertThat(nodes).hasSize(3);
         assertThat(nodes.keySet())
                 .extracting(Node::getLabel)
@@ -113,7 +113,7 @@ class ConvergeStateServiceTest {
         convergeStateService.merge(replicaB.getState());
         convergeStateService.merge(replicaC.getState());
         ReadOnlyGraph result = convergeStateService.getResult();
-        assertThat(result.getNodes().keySet())
+        assertThat(result.getGraph().keySet())
                 .extracting(Node::getLabel)
                 .containsExactlyInAnyOrder("two", "three", "four", "five");
 
@@ -143,7 +143,7 @@ class ConvergeStateServiceTest {
         // B already merged in A's state, so we receive both updates via B.
         convergeStateService.merge(replicaB.getState());
         ReadOnlyGraph r1 = convergeStateService.getResult();
-        assertThat(r1.getNodes().keySet()).extracting(Node::getLabel).containsExactly("one", "two", "three", "four", "five");
+        assertThat(r1.getGraph().keySet()).extracting(Node::getLabel).containsExactly("one", "two", "three", "four", "five");
         assertThat(r1.hasEdge("four", "five")).isTrue();
 
         // We now receive C's update which was to remove the edges between "one" and it's connected nodes, then to delete "one",
@@ -165,7 +165,7 @@ class ConvergeStateServiceTest {
 
         convergeStateService.merge(replicaA.getState());
         ReadOnlyGraph r3 = convergeStateService.getResult();
-        assertThat(r3.getNodes().keySet())
+        assertThat(r3.getGraph().keySet())
                 .extracting(Node::getLabel)
                 .containsExactlyInAnyOrder("two", "three", "four", "five");
 
@@ -207,7 +207,7 @@ class ConvergeStateServiceTest {
     public void concurrentAddEdgeRemoveNodeFavoursRemove() {
         replicaA = instantiateReplica();
         localState = initialState();
-        assertThat(convergeStateService.getResult().getNodes().keySet())
+        assertThat(convergeStateService.getResult().getGraph().keySet())
                 .extracting(Node::getLabel)
                 .containsExactly("one", "two", "three");
 
@@ -259,7 +259,7 @@ class ConvergeStateServiceTest {
         replicaB = instantiateReplica();
         replicaC = instantiateReplica();
         localState = initialState();
-        assertThat(convergeStateService.getResult().getNodes().keySet())
+        assertThat(convergeStateService.getResult().getGraph().keySet())
                 .extracting(Node::getLabel)
                 .containsExactly("one", "two", "three");
 
