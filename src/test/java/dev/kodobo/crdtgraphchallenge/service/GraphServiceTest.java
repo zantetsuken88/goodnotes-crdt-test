@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +33,7 @@ class GraphServiceTest {
 
     @Test
     public void canBuildGraphFromFile() {
-        populateGraphFromFile();
+        populateGraphFromFile("testData.txt");
 
         assertThat(graphService.getGraph().getNodes()).hasSize(4);
         assertThat(localState.getNodesAdded().values())
@@ -143,29 +145,36 @@ class GraphServiceTest {
         boolean result = graphService.getGraph().hasEdge(source, destination);
         LocalDateTime edgeAddedAt = added.getTimestamp();
         LocalDateTime edgeRemovedAt = state.getRemovedEdge(source, destination).getTimestamp();
-        assertThat(edgeAddedAt).isBefore(edgeRemovedAt);
+        // Graph favours removal - so we need to assert that the time added was either equal or before removal
+        // to account for both eventualities.
+        assertThat(edgeAddedAt).isBeforeOrEqualTo(edgeRemovedAt);
         assertThat(result).isFalse();
     }
 
     @Test
     public void canReAddPreviouslyRemovedNode() {
-        graphService.addNode("node", LocalDateTime.now(clock));
+        // Graph favours removals (see: ConvergeStateServiceTest.java:207) so using a fixed clock since this test
+        // will fail on an extra-fast system that manages to perform the removal and re-addition in the
+        // same millisecond
+        Clock fixedClock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        LocalDateTime now = LocalDateTime.now(fixedClock);
+        graphService.addNode("node", now);
 
         boolean added = graphService.getGraph().hasNode("node");
         Node node = graphService.getGraph().getNode("node");
         assertThat(added).isTrue();
-        graphService.removeNode(node, LocalDateTime.now(clock));
+        graphService.removeNode(node, now.plusSeconds(1));
         boolean removed = graphService.getGraph().hasNode("node");
         assertThat(removed).isFalse();
 
-        graphService.addNode("node", LocalDateTime.now(clock));
+        graphService.addNode("node", now.plusSeconds(2));
         boolean reAdded = graphService.getGraph().hasNode("node");
         assertThat(reAdded).isTrue();
     }
 
     @Test
     public void removingNodeRemovesAssociatedEdges() {
-        populateGraphFromFile();
+        populateGraphFromFile("testData.txt");
         State state = graphService.getState();
         List<Node> node2Edges = graphService.getConnectedNodes("node2");
         List<Node> node4Edges = graphService.getConnectedNodes("node4");
@@ -182,19 +191,28 @@ class GraphServiceTest {
 
     @Test
     public void canFindShortestPathBetweenTwoNodes() {
-        populateGraphFromFile();
+        populateGraphFromFile("familyTree.txt");
         ReadOnlyGraph graph = graphService.getGraph();
-        List<String> shortestRoute = graph.findShortestRoute("node3", "node4");
-        assertThat(shortestRoute).contains("node4", "node1", "node3");
+        List<String> shortestRoute = graph.findShortestRoute("June", "Lizzie");
+        assertThat(shortestRoute).contains("Lizzie", "Tom", "Paul", "June");
     }
 
-    private void populateGraphFromFile() {
+    @Test
+    public void canTraverseEntireGraph() {
+        populateGraphFromFile("familyTree.txt");
+        ReadOnlyGraph graph = graphService.getGraph();
+        Set<String> graphAnyRoute = graph.depthFirstSearch("Paul");
+        assertThat(graphAnyRoute)
+                .containsExactlyInAnyOrder("Paul", "June", "Fliss", "Mark", "Lee", "Tom", "Marianne", "Jules", "Lizzie");
+    }
+
+    private void populateGraphFromFile(String filename) {
         try {
             String contents = FileUtils.readFileToString(
                     new File(
                             Objects.requireNonNull(
                                             this.getClass().getClassLoader()
-                                                    .getResource("testData.txt"))
+                                                    .getResource(filename))
                                     .toURI()), StandardCharsets.UTF_8);
             // We collect all the edges in a map first because the nodes need to be added before we can add the edges
             Map<String, String> edges = new LinkedHashMap<>();

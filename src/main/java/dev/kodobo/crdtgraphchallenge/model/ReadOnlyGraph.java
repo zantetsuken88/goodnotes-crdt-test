@@ -40,6 +40,8 @@ public class ReadOnlyGraph {
         Map<String, VisitedNode> visitedNodes = breadthFirstSearch(root);
         Stack<String> routeStack = new Stack<>();
         List<String> route = new LinkedList<>();
+        StringBuilder routeBuilder = new StringBuilder();
+
         route.add(dest);
         if (visitedNodes.containsKey(dest)) {
             VisitedNode currentNode = visitedNodes.get(dest);
@@ -54,13 +56,31 @@ public class ReadOnlyGraph {
 
             while(!routeStack.empty()) {
                 String node = routeStack.pop();
-                System.out.print(node);
+                routeBuilder.append(node);
                 if (routeStack.size() > 0 ) {
-                    System.out.print(" --> ");
+                   routeBuilder.append(" --> ");
                 }
             }
         }
+        System.out.println(routeBuilder);
         return route;
+    }
+
+    public Set<String> depthFirstSearch(String root) {
+        Set<String> visited = new LinkedHashSet<>();
+        Stack<String> path = new Stack<>();
+        path.push(root);
+
+        while (!path.empty()) {
+            String node = path.pop();
+            if (!visited.contains(node)) {
+                visited.add(node);
+                for (Node n : getConnectedNodes(node)) {
+                    path.push(n.getLabel());
+                }
+            }
+        }
+        return visited;
     }
 
     private Map<String, VisitedNode> breadthFirstSearch(String root) {
@@ -78,23 +98,6 @@ public class ReadOnlyGraph {
                     int distanceFromRoot = visited.get(node).getDistanceFromRoot() + 1;
                     visited.put(n.getLabel(), new VisitedNode(distanceFromRoot, node));
                     queue.add(n.getLabel());
-                }
-            }
-        }
-        return visited;
-    }
-
-    private Set<String> depthFirstSearch(String root) {
-        Set<String> visited = new LinkedHashSet<>();
-        Stack<String> path = new Stack<>();
-        path.push(root);
-
-        while (!path.empty()) {
-            String node = path.pop();
-            if (!visited.contains(node)) {
-                visited.add(node);
-                for (Node n : getConnectedNodes(node)) {
-                    path.push(n.getLabel());
                 }
             }
         }
